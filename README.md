@@ -1,95 +1,189 @@
-# Tech Challenge - Fase 1
+# Olist Marketplace | Seller Satisfaction & Business Performance
 
-## Sobre o projeto
+**FIAP Tech Challenge · Phase 1 · Data Analytics & Executive Decision Support**
 
-Este repositório contém o trabalho acadêmico desenvolvido para o **Tech Challenge - Fase 1** da FIAP, com base no case de e-commerce da Olist.
+An analytical study connecting customer reviews, seller performance, and commercial relevance in the Brazilian Olist marketplace. Four transactional datasets become a seller-level analytical view, six visualizations, and an executive report with recommendations for partner quality governance.
 
-O objetivo do projeto é transformar dados transacionais em uma análise executiva voltada para tomada de decisão. A partir da base pública da Olist, o grupo avaliou como vendedores com baixa satisfação podem afetar a confiabilidade percebida do ecossistema, considerando sua participação em quantidade de vendedores, pedidos e receita.
+**242 low-rated sellers represented 8.16% of rated sellers, but only 1.83% of analyzed item revenue.** The project makes that exposure measurable and translates the findings into differentiated actions for seller segments.
 
-## Pergunta central
+[Executive report](docs/tech-challenge-phase-1-executive-report.pdf) · [Video presentation](https://youtu.be/-cpJJs3xU7M) · [Analysis notebook](Analise_vendedores_baixa_nota_V01.ipynb)
 
-Vendedores com baixa satisfação representam apenas casos isolados ou indicam um risco relevante para a confiança no ecossistema Olist?
+![Share of rated sellers by satisfaction segment](docs/images/seller-share.png)
 
-## Contexto da análise
+## Business question
 
-A Olist atua como um ecossistema que conecta vendedores a grandes marketplaces. Nesse modelo, a experiência entregue por cada parceiro pode impactar a percepção dos clientes sobre a marca como um todo.
+How commercially relevant are low-rated sellers, and how can customer satisfaction data guide partner quality decisions?
 
-Por isso, a análise considera que avaliações baixas não são apenas indicadores individuais de desempenho, mas também sinais de atenção para a reputação e a confiança da plataforma.
+The analysis connects the size of the seller segment, its contribution to orders and revenue, and its review performance. The executive narrative discusses reputational risk; the quantitative analysis measures observed commercial exposure rather than estimating a causal impact on brand trust.
 
-## Metodologia resumida
+## Skills demonstrated
 
-O estudo utiliza dados de pedidos, itens do pedido, avaliações e vendedores da base pública da Olist.
+| Competency | Evidence |
+|---|---|
+| Business problem framing | Translating marketplace trust into seller, order, revenue, and satisfaction indicators |
+| Python and pandas | Domain-specific filtering, validation, deduplication, joins, and missing-review handling |
+| Analytical data modeling | Separating order-seller satisfaction from item-level revenue to preserve each metric's grain |
+| Exploratory and descriptive analysis | Segment summaries, participation metrics, satisfaction bands, and scenario comparisons |
+| Data visualization | Six Matplotlib charts with consistent labels, colors, percentages, and BRL formatting |
+| Executive communication | A 15-page report, recorded presentation, consolidated findings, and actionable recommendations |
 
-Principais tratamentos aplicados:
+Seller classification follows explicit business rules. Predictive machine learning is demonstrated in [Phase 2](https://github.com/joaomottin/TechChallenge-Fase2).
 
-- foram mantidos apenas pedidos entregues (`delivered`) com data de entrega preenchida;
-- foram consideradas avaliações válidas entre 1 e 5;
-- duplicidades de avaliação por `order_id` foram removidas;
-- itens sem vendedor identificado ou com preço inválido foram desconsiderados;
-- a visão final foi consolidada por `seller_id`.
+## End-to-end workflow
 
-Para calcular satisfação, cada avaliação foi considerada uma única vez por combinação de pedido e vendedor. Esse tratamento evita que pedidos com múltiplos itens tenham peso maior na média de avaliação do vendedor.
+```mermaid
+flowchart LR
+    A[Orders, items, reviews, sellers] --> B[Validate and clean]
+    B --> C[Delivered order items]
+    C --> D[Unique order-seller pairs]
+    D --> E[Review averages and order counts]
+    C --> F[Item revenue by seller]
+    E --> G[Seller analytical dataset]
+    F --> G
+    G --> H[Satisfaction segments and KPIs]
+    H --> I[Six charts and executive report]
+    I --> J[Quality governance recommendations]
+```
 
-A base operacional possui 2.970 vendedores com pedidos entregues e receita consolidada. Para a segmentação de satisfação, foram considerados apenas os 2.965 vendedores com avaliação válida. Cinco vendedores possuem pedido entregue, mas não possuem avaliação registrada e, por isso, ficam fora da classificação binária entre detratores e não detratores.
+### 1. Load and understand the data
 
-A receita foi calculada separadamente pela soma dos preços dos itens vendidos, pois cada item possui valor próprio dentro do pedido.
+Source: **Brazilian E-Commerce Public Dataset by Olist**, available on [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
 
-## Regra de classificação
+| File in `data/` | Original rows | Role |
+|---|---:|---|
+| `olist_orders_dataset.csv` | 99,441 | Order status and delivery confirmation |
+| `olist_order_items_dataset.csv` | 112,650 | Order-seller relationships and item prices |
+| `olist_order_reviews_dataset.csv` | 99,224 | Customer review scores |
+| `olist_sellers_dataset.csv` | 3,095 | Seller registry and location fields |
 
-A análise utilizou a média de avaliações (`review_score`) como proxy de NPS/satisfação, já que a base pública não contém a pergunta formal de NPS.
+### 2. Apply explicit quality rules
 
-A classificação principal foi:
+- Keep orders with `order_status == 'delivered'` and a populated customer delivery date: **96,470 orders**.
+- Keep review scores from 1 to 5 and the first review per `order_id`: **98,673 review records**, before restricting to delivered orders.
+- Keep items with a seller identifier and `price > 0`.
+- Check seller city and state completeness in the registry.
 
-- **Detratores:** vendedores com `media_nota <= 3`;
-- **Não detratores:** vendedores com `media_nota > 3`;
-- **Faixa de atenção:** vendedores com média maior que 3 e menor ou igual a 4;
-- **Saudáveis:** vendedores com média maior que 4.
+### 3. Build metrics at the correct grain
 
-## Principais resultados
+Satisfaction uses distinct `order_id + seller_id` pairs before joining reviews. A multi-item purchase therefore contributes one review per seller, instead of giving the same review extra weight for each item.
 
-Com a metodologia aplicada, foram analisados **2.965 vendedores com avaliação válida**.
+Revenue is calculated separately as the sum of item `price`. It represents merchandise value in BRL, excluding freight, rather than Olist's net revenue or profit.
 
-| Indicador | Resultado |
+The seller view contains `total_pedidos` (distinct delivered orders per seller), `media_nota` (mean review score), and `receita_total` (item revenue).
+
+| Population | Sellers | Use |
+|---|---:|---|
+| Full registry | 3,095 | Satisfaction bands, including unrated sellers |
+| Sellers with delivered orders and revenue | 2,970 | Operational analytical population |
+| Sellers with a valid review average | 2,965 | Binary satisfaction comparison |
+
+Five sellers in the operational population have no valid review. The full registry contains **130 sellers without a score in the analytical view**, including sellers outside the delivered-order population. These counts describe different populations.
+
+### 4. Segment satisfaction
+
+| Segment | Rule | Sellers |
+|---|---|---:|
+| Low-rated / detractor | `media_nota <= 3` | 242 |
+| Watchlist | `3 < media_nota <= 4` | 767 |
+| Healthy | `media_nota > 4` | 1,956 |
+| Unrated in the analytical view | No available seller average | 130 |
+
+The binary comparison combines watchlist and healthy sellers into **2,723 non-detractors**. “Detractor” is the project's label for low review averages. The dataset uses a 1-to-5 review scale and contains no formal Net Promoter Score question.
+
+## Results and business interpretation
+
+| Indicator | Result |
 |---|---:|
-| Vendedores detratores | 242 |
-| Participação dos detratores na base avaliada | 8,16% |
-| Participação dos detratores nos pedidos | 0,91% |
-| Participação dos detratores na receita | 1,83% |
-| Média por vendedor com detratores | 4,18 |
-| Média por vendedor sem detratores | 4,35 |
-| Receita média por vendedor não detrator | R$ 4.764 |
-| Receita média por vendedor detrator | R$ 1.000 |
+| Detractor share of rated sellers | 8.16% |
+| Detractor share of seller-order counts | 0.91% |
+| Detractor share of item revenue | 1.83% |
+| Detractor item revenue | R$242,046.90 |
+| Non-detractor item revenue | R$12,971,374.43 |
+| Average seller score, all rated sellers | 4.18 / 5 |
+| Average seller score, excluding detractors | 4.35 / 5 |
+| Average item revenue per non-detractor | Approximately R$4,764 |
+| Average item revenue per detractor | Approximately R$1,000 |
 
-A leitura principal é que os vendedores detratores representam uma parcela pequena da base, dos pedidos e da receita. O risco identificado está menos associado ao volume financeiro e mais à possibilidade de impacto reputacional e perda de confiança no ecossistema.
+Better-rated sellers generated approximately **4.76 times** as much average item revenue per seller in the observed data. Most analyzed revenue lies outside the low-rated segment, supporting a targeted approach to quality management.
 
-## Arquivos principais
+Order participation uses the **sum of each seller's distinct orders**: 891 for detractors and 96,915 for non-detractors. An order involving several sellers can appear in several seller counts; these totals represent seller-order activity.
 
-- `Analise_vendedores_baixa_nota_V01.ipynb`: notebook com carregamento, limpeza, preparação da base, segmentação dos vendedores, cálculo dos indicadores e geração dos gráficos.
-- `data/`: pasta com os arquivos CSV utilizados na análise.
+The satisfaction comparison is an unweighted average of seller averages. Excluding a segment changes the calculation by construction; it does not demonstrate that suspending sellers would cause the same improvement in future satisfaction.
 
-## Como executar
+## Visual analysis
 
-1. Abra o notebook `Analise_vendedores_baixa_nota_V01.ipynb`.
-2. Confirme que os arquivos CSV estão disponíveis na pasta `data/`.
-3. Execute as células em ordem.
+![Item revenue by seller satisfaction segment](docs/images/revenue-by-segment.png)
 
-Bibliotecas utilizadas:
+![Distribution across satisfaction bands](docs/images/satisfaction-segments.png)
 
-- `pandas`
-- `matplotlib`
+| Figure | Analytical purpose |
+|---|---|
+| [Seller share](docs/images/seller-share.png) | Size of the rated seller segments |
+| [Revenue by segment](docs/images/revenue-by-segment.png) | Commercial exposure |
+| [Delivered seller-order counts](docs/images/orders-by-segment.png) | Operational participation |
+| [Average satisfaction](docs/images/average-satisfaction.png) | Descriptive comparison with and without detractors |
+| [Satisfaction bands](docs/images/satisfaction-segments.png) | Healthy, watchlist, detractor, and unrated populations |
+| [Revenue per seller](docs/images/revenue-per-seller.png) | Average commercial contribution |
 
-## Base de dados
+The six standalone images preserve the existing notebook figures. Chart labels and the original report are in Portuguese.
 
-A análise foi desenvolvida com o **Brazilian E-Commerce Public Dataset by Olist**, base pública com informações de pedidos, itens do pedido, vendedores, avaliações e entregas do e-commerce brasileiro.
+## Executive deliverables
 
-Fonte: [Kaggle - Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+The [15-page executive report](docs/tech-challenge-phase-1-executive-report.pdf) develops the business context, methodology, charts, findings table, conclusions, and recommendations. The [recorded presentation](https://youtu.be/-cpJJs3xU7M) communicates the case to a business audience.
 
-## Integrantes
+The proposed policy differentiates seller groups:
 
-| Nome | RM | E-mail |
+1. **Detractors:** investigate low ratings, set an improvement period, and consider suspension or removal if performance fails to recover.
+2. **Watchlist:** provide training, clear communication, and measurable improvement goals.
+3. **Unrated sellers:** monitor review coverage before drawing conclusions about quality.
+4. **Ongoing governance:** review satisfaction, order activity, revenue, and segment movement together.
+
+These are recommendations from the study, without a measured implementation outcome. Small review counts and order-level feedback shared across sellers should inform any individual seller action.
+
+## Reproduce the analysis
+
+From the repository root:
+
+```bash
+python -m venv .venv
+```
+
+Activate with `.venv\Scripts\Activate.ps1` in PowerShell or `source .venv/bin/activate` on macOS/Linux, then run:
+
+```bash
+python -m pip install pandas matplotlib notebook
+python -m notebook Analise_vendedores_baixa_nota_V01.ipynb
+```
+
+Keep the four CSVs in `data/` and execute the cells in order. Charts are displayed in the notebook; documentation PNGs are separately extracted copies. Dependencies are not version-pinned, so package versions can affect reproduction.
+
+## Repository guide
+
+```text
+Analise_vendedores_baixa_nota_V01.ipynb   Preparation, metrics, and charts
+data/                                  Four source CSVs
+docs/
+  tech-challenge-phase-1-executive-report.pdf
+  images/                              Six existing notebook figures
+README.md                              Project narrative and execution guide
+```
+
+## Project series
+
+| Phase | Focus | Repository |
 |---|---|---|
-| Felipe Macedo da Silva | RM373436 | felipemsdocs@gmail.com |
-| João Pedro Mezzadri Mottin | RM372545 | joaopedromm.construtiva@outlook.com |
-| Miguel Fernandes Martins de Bastos | RM373815 | miguelbastospro@gmail.com |
-| Thanael Butewicz | RM373935 | zthanaelbutewicz@hotmail.com |
-| Verônica de Fátima Machado Silva | RM371976 | v.machado10@hotmail.com |
+| 1 | Business analytics and executive recommendations | [Olist seller analysis](https://github.com/joaomottin/TechChallenge-Fase1) |
+| 2 | Supervised learning and imbalanced classification | [Wine quality](https://github.com/joaomottin/TechChallenge-Fase2) |
+| 3 | AWS data engineering, PySpark, and analytical reporting | [State of Data Brasil](https://github.com/joaomottin/TechChallenge-Fase3) |
+
+## Team
+
+Developed collaboratively for FIAP.
+
+| Contributor | Student ID |
+|---|---|
+| Felipe Macedo da Silva | RM373436 |
+| João Pedro Mezzadri Mottin | RM372545 |
+| Miguel Fernandes Martins de Bastos | RM373815 |
+| Thanael Butewicz | RM373935 |
+| Verônica de Fátima Machado Silva | RM371976 |
