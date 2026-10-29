@@ -1,12 +1,12 @@
-# Olist Marketplace | Seller Satisfaction & Business Performance
+# Olist Marketplace: Seller Performance & Customer Satisfaction
 
-**FIAP Tech Challenge · Phase 1 · Data Analytics & Executive Decision Support**
+**Applied Data Study · Python · pandas · Matplotlib · Business Analytics**
 
 An analytical study connecting customer reviews, seller performance, and commercial relevance in the Brazilian Olist marketplace. Four transactional datasets become a seller-level analytical view, six visualizations, and an executive report with recommendations for partner quality governance.
 
 **242 low-rated sellers represented 8.16% of rated sellers, but only 1.83% of analyzed item revenue.** The project makes that exposure measurable and translates the findings into differentiated actions for seller segments.
 
-[Executive report](docs/tech-challenge-phase-1-executive-report.pdf) · [Video presentation](https://youtu.be/-cpJJs3xU7M) · [Analysis notebook](Analise_vendedores_baixa_nota_V01.ipynb)
+[Executive report](docs/olist-seller-performance-executive-report.pdf) · [Video presentation](https://youtu.be/-cpJJs3xU7M) · [Analysis notebook](Analise_vendedores_baixa_nota_V01.ipynb)
 
 ![Share of rated sellers by satisfaction segment](docs/images/seller-share.png)
 
@@ -27,7 +27,7 @@ The analysis connects the size of the seller segment, its contribution to orders
 | Data visualization | Six Matplotlib charts with consistent labels, colors, percentages, and BRL formatting |
 | Executive communication | A 15-page report, recorded presentation, consolidated findings, and actionable recommendations |
 
-Seller classification follows explicit business rules. Predictive machine learning is demonstrated in [Phase 2](https://github.com/joaomottin/TechChallenge-Fase2).
+Seller classification follows explicit business rules. Predictive machine learning is demonstrated in [the wine quality study](https://github.com/joaomottin/wine-quality-machine-learning).
 
 ## End-to-end workflow
 
@@ -129,7 +129,7 @@ The six standalone images preserve the existing notebook figures. Chart labels a
 
 ## Executive deliverables
 
-The [15-page executive report](docs/tech-challenge-phase-1-executive-report.pdf) develops the business context, methodology, charts, findings table, conclusions, and recommendations. The [recorded presentation](https://youtu.be/-cpJJs3xU7M) communicates the case to a business audience.
+The [15-page executive report](docs/olist-seller-performance-executive-report.pdf) develops the business context, methodology, charts, findings table, conclusions, and recommendations. The [recorded presentation](https://youtu.be/-cpJJs3xU7M) communicates the case to a business audience.
 
 The proposed policy differentiates seller groups:
 
@@ -163,27 +163,27 @@ Keep the four CSVs in `data/` and execute the cells in order. Charts are display
 Analise_vendedores_baixa_nota_V01.ipynb   Preparation, metrics, and charts
 data/                                  Four source CSVs
 docs/
-  tech-challenge-phase-1-executive-report.pdf
+  olist-seller-performance-executive-report.pdf
   images/                              Six existing notebook figures
 README.md                              Project narrative and execution guide
 ```
 
-## Project series
+## Related studies
 
-| Phase | Focus | Repository |
+These collaborative studies explore complementary problems in business analytics, machine learning, and data engineering.
+
+| Study | Focus | Repository |
 |---|---|---|
-| 1 | Business analytics and executive recommendations | [Olist seller analysis](https://github.com/joaomottin/TechChallenge-Fase1) |
-| 2 | Supervised learning and imbalanced classification | [Wine quality](https://github.com/joaomottin/TechChallenge-Fase2) |
-| 3 | AWS data engineering, PySpark, and analytical reporting | [State of Data Brasil](https://github.com/joaomottin/TechChallenge-Fase3) |
+| Olist seller performance | Marketplace analytics, customer satisfaction, and executive recommendations | [Explore the study](https://github.com/joaomottin/olist-seller-performance-analysis) |
+| Wine quality prediction | Supervised learning, imbalanced classification, and model interpretation | [Explore the study](https://github.com/joaomottin/wine-quality-machine-learning) |
+| Brazil data market intelligence | AWS architecture, distributed data preparation, and analytical reporting | [Explore the study](https://github.com/joaomottin/brazil-data-market-aws-pipeline) |
 
-## Team
+## Collaborators
 
-Developed collaboratively for FIAP.
+Developed collaboratively as part of the FIAP postgraduate program.
 
-| Contributor | Student ID |
-|---|---|
-| Felipe Macedo da Silva | RM373436 |
-| João Pedro Mezzadri Mottin | RM372545 |
-| Miguel Fernandes Martins de Bastos | RM373815 |
-| Thanael Butewicz | RM373935 |
-| Verônica de Fátima Machado Silva | RM371976 |
+- Felipe Macedo da Silva
+- João Pedro Mezzadri Mottin
+- Miguel Fernandes Martins de Bastos
+- Thanael Butewicz
+- Verônica de Fátima Machado Silva
